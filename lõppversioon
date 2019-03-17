@@ -1,0 +1,86 @@
+from tkinter import *
+import keyboard
+import random
+import wikipedia
+import sys
+import time
+   
+def close_game():
+    global root
+    root.destroy()
+    sys.exit()
+    
+def key_press(key):
+    global wordCount
+    global sisestatudTekst
+    key = key.name 
+    if len(key) == 1:
+        wordCount+=1
+    if key == "esc":
+        show_stats()
+    if key == "backspace":
+        sisestatudTekst = sisestatudTekst[:-1]
+    if sisestatudTekst in alg_tekst[:len(sisestatudTekst)]:
+        tekst1.configure(background="white")
+keyboard.on_press(key_press)
+
+def read_key(event):
+    global sisestatudTekst
+    key = event.char
+    if len(key) == 1 and key != ""or  key!="" and key!= "":
+        sisestatudTekst += key
+    if sisestatudTekst not in alg_tekst[:len(sisestatudTekst)]:
+        tekst1.configure(background="tomato")
+    if sisestatudTekst == alg_tekst:
+        show_stats()
+
+def show_stats():
+    lõpp_aeg = time.time()
+    kogu_aeg = lõpp_aeg - algus_aeg
+    newwin = Toplevel(root)
+    display = Label(newwin, text="""
+Sõna minutis: %d
+Tähemärki sekundis: %d
+Kulunud aeg: %d sekundit
+Täpsus: %d%%
+""" %(round(len(alg_tekst.split(" "))*60/kogu_aeg), round(len(alg_tekst) / kogu_aeg), kogu_aeg, round(len(alg_tekst)/wordCount*100,2) if alg_tekst == sisestatudTekst else 0))
+    display.config(font=("Courier", 20))
+    display.pack()
+    newwin.geometry("%dx%d+%d+%d" % (650, 350, ws/2, hs/2)) # width, height, x cord, y cord
+    b = Button(newwin, text="Lõpeta", command=close_game, font=20, padx=5, pady=5, bg="white")
+    b.pack()
+    
+wordCount = 0
+sisestatudTekst =  ""
+while True:
+    try:
+        alg_tekst = wikipedia.summary(wikipedia.random(pages=1))
+        break
+    except:
+        pass
+root = Tk()
+root.title("NotTypeRacer")
+ws = root.winfo_screenwidth() 
+hs = root.winfo_screenheight() 
+
+root.geometry("%dx%d+%d+%d" % (900,700, ws*0.1, hs * 0.01))
+
+tekst2 = Text(root, height=20, padx = 50, bd = 50)
+scroll = Scrollbar(root, command=tekst2.yview)
+tekst2.configure(yscrollcommand=scroll.set)
+
+tekst2.tag_configure("bold_italics", font=("Arial", 14, "bold", "italic"))
+
+tekst2.insert(END, alg_tekst, "color")
+tekst2.pack(padx=20, pady=20)
+tekst2.config(state=DISABLED)
+scroll.pack(side=RIGHT, fill=Y)
+
+tekst1 = Text(root, height=10, highlightthickness=2)
+tekst1.pack(padx=20, pady=20)
+algus_aeg = time.time()
+tekst1.focus_set()
+
+tekst1.bind("<KeyPress>", read_key)
+
+root.mainloop() #display items
